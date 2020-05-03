@@ -12,6 +12,7 @@
 
   // prototype holds methods (to save memory space)
   TD.prototype = {
+    // Adding items on init if something was stored in localStorage
     mount: function () {
       const savedItems = JSON.parse(localStorage.getItem('myTodo') || '[]');
       if (savedItems.length > 0) {
@@ -19,6 +20,7 @@
       }
     },
 
+    // Adding items/items
     add: function (...titles) {
       this.validate(titles);
 
@@ -27,17 +29,29 @@
       this.draw();
     },
 
+    // If was configured, saving to localStorage
     save: function () {
       if (config.save) {
         localStorage.setItem('myTodo', JSON.stringify(todoList));
       }
     },
 
+    // Adding items to the DOM
     draw: function () {
-      console.log(todoList);
-      // TODO draw items
+      const existingItems = document.querySelectorAll('.list-group-item');
+      const fragment = document.createDocumentFragment();
+
+      for (let i = existingItems.length; i < todoList.length; i++) {
+        const li = document.createElement('li');
+        li.className = 'list-group-item';
+        li.textContent = todoList[i];
+        fragment.appendChild(li);
+      }
+
+      container.appendChild(fragment);
     },
 
+    // Checking if at least one item was provided
     validate: function (titles) {
       if (titles.length === 0) {
         throw 'Cannot add empty item';
