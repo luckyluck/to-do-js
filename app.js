@@ -9,3 +9,12 @@ addButton.addEventListener('click', function (event) {
   todo.add(title.value);
   title.value = '';
 });
+
+window.addEventListener('click', e => {
+  e.stopPropagation();
+  e.preventDefault();
+  if (e.target.classList.contains('delete-todo')) {
+    console.log(e.target.dataset.title);
+    todo.remove(e.target.dataset.title);
+  }
+});

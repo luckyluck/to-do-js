@@ -29,6 +29,26 @@
       this.draw();
     },
 
+    // Removing item
+    remove: function (title) {
+      if (!title) {
+        throw 'A proper title should be provided';
+      }
+
+      const index = todoList.indexOf(title);
+
+      if (index === -1) {
+        throw 'Such item does not exist';
+      }
+
+      // Removing item from the list
+      todoList.splice(index, 1);
+      // Removing item from the DOM
+      container.querySelectorAll('li')[index].remove();
+      // We should also save updated list
+      this.save();
+    },
+
     // If was configured, saving to localStorage
     save: function () {
       if (config.save) {
@@ -44,7 +64,15 @@
       for (let i = existingItems.length; i < todoList.length; i++) {
         const li = document.createElement('li');
         li.className = 'list-group-item';
-        li.textContent = todoList[i];
+        li.innerHTML = `
+          <div class="row">
+            <div class="col-md-11 col-sm-10">${todoList[i]}</div>
+            <div class="col-md-1 col-sm-2">
+              <button type="button" class="btn btn-warning delete-todo" data-title="${todoList[i]}">delete</button>
+            </div>
+          </div>
+
+        `;
         fragment.appendChild(li);
       }
 
