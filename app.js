@@ -6,15 +6,21 @@ addButton.addEventListener('click', function (event) {
 
   const title = document.getElementById('title');
   if (!title) return;
-  todo.add(title.value);
+  todo.addItem(title.value);
   title.value = '';
 });
 
 window.addEventListener('click', e => {
   e.stopPropagation();
   e.preventDefault();
+
   if (e.target.classList.contains('delete-todo')) {
     console.log(e.target.dataset.title);
     todo.remove(e.target.dataset.title);
+  }
+
+  if (e.target.classList.contains('finish-todo')) {
+    console.log(e.target.dataset.title);
+    todo.deactivate(e.target.dataset.title);
   }
 });

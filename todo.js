@@ -1,9 +1,22 @@
 ;(function (global) {
+  // Array of objects with title and state active|finished
   const todoList = [];
   let config = {
     save: false
   };
   let container;
+
+  const add = (...titles) => {
+    todoList.push(...titles);
+  };
+
+  // Adding items on init if something was stored in localStorage
+  const mount = () => {
+    const savedItems = JSON.parse(localStorage.getItem('myTodo') || '[]');
+    if (savedItems.length > 0) {
+      add(...savedItems);
+    }
+  };
 
   // 'new' an object
   const TD = function (containerSelector = '#list', titles = [], options = {}) {
@@ -12,19 +25,11 @@
 
   // prototype holds methods (to save memory space)
   TD.prototype = {
-    // Adding items on init if something was stored in localStorage
-    mount: function () {
-      const savedItems = JSON.parse(localStorage.getItem('myTodo') || '[]');
-      if (savedItems.length > 0) {
-        this.add(...savedItems);
-      }
-    },
-
     // Adding items/items
-    add: function (...titles) {
-      this.validate(titles);
+    addItem: function (title) {
+      this.validate(title);
 
-      todoList.push(...titles);
+      add({ title, status: 'active' });
       this.save();
       this.draw();
     },
@@ -35,7 +40,7 @@
         throw 'A proper title should be provided';
       }
 
-      const index = todoList.indexOf(title);
+      const index = todoList.findIndex(item => item.title === title);
 
       if (index === -1) {
         throw 'Such item does not exist';
@@ -47,6 +52,23 @@
       container.querySelectorAll('li')[index].remove();
       // We should also save updated list
       this.save();
+    },
+
+    deactivate: function (title) {
+      const index = todoList.findIndex(item => item.title === title);
+
+      if (index === -1) {
+        throw 'Such item does not exist';
+      }
+
+      const selectedItem = todoList[index];
+      this.remove(title);
+      todoList.push({
+        ...selectedItem,
+        status: 'done'
+      });
+      this.save();
+      this.draw();
     },
 
     // If was configured, saving to localStorage
@@ -66,9 +88,12 @@
         li.className = 'list-group-item';
         li.innerHTML = `
           <div class="row">
-            <div class="col-md-11 col-sm-10">${todoList[i]}</div>
+            <div class="col-md-10 col-sm-8">${todoList[i].title}</div>
             <div class="col-md-1 col-sm-2">
-              <button type="button" class="btn btn-warning delete-todo" data-title="${todoList[i]}">delete</button>
+              <button type="button" class="btn btn-warning delete-todo" data-title="${todoList[i].title}">delete</button>
+            </div>
+            <div class="col-md-1 col-sm-2">
+              <button type="button" class="btn btn-success finish-todo" data-title="${todoList[i].title}">done</button>
             </div>
           </div>
 
@@ -80,8 +105,8 @@
     },
 
     // Checking if at least one item was provided
-    validate: function (titles) {
-      if (titles.length === 0) {
+    validate: function (title) {
+      if (title.length === 0) {
         throw 'Cannot add empty item';
       }
     }
@@ -94,7 +119,7 @@
       throw 'TODO items container should be provided';
     }
 
-    this.mount();
+    mount();
 
     config = {
       ...config,
@@ -104,8 +129,10 @@
     // If we have provided items on init
     // we should add them to the list
     if (titles.length > 0) {
-      this.add(...titles);
+      add(...titles);
     }
+
+    this.draw();
   };
 
   // trick borrowed from jQuery so we don't have to use the 'new' keyword
